@@ -66,7 +66,7 @@ async def process_start(message: Message) -> None:
 @router.message(Command(commands=["cancel"]), ~StateFilter(default_state))
 async def process_cancel_in_machine_state(message: Message, state: FSMContext):
     await message.answer(
-        "Malumotlar saqlanmadi, \nqaytadan to'dirish uchun /start buyrug'ini yuboring"
+        "Malumotlar saqlanmadi, \nqaytadan to'ldirish uchun /start buyrug'ini yuboring"
     )
     await state.clear()
 
@@ -75,56 +75,49 @@ async def process_cancel_in_machine_state(message: Message, state: FSMContext):
 async def start_filling_form(message: Message, state: FSMContext):
     await message.answer(
         text="Iltimos, yashash shahar(tuman)ingzni yuboring\n\n Anketa yuborishni to'xtatish uchun /cancel",
+        reply_markup=ReplyKeyboardRemove()
     )
     await state.set_state(FSMFillForm.fill_city)
 
 
 @router.message(StateFilter(FSMFillForm.fill_city))
 async def process_fill_text(message: Message, state: FSMContext):
-    await message.answer("Barakalla, \niltimos, yashash manzilingizni kiriting")
+    await message.answer("iltimos, yashash manzilingizni kiriting\n\n Anketa yuborishni to'xtatish uchun /cancel")
     await state.update_data(city=message.text)
     await state.set_state(FSMFillForm.fill_address)
 
 
 @router.message(StateFilter(FSMFillForm.fill_address))
 async def process_fill_text(message: Message, state: FSMContext):
-    user_data = await state.get_data()
-    print(user_data)
-    await message.answer("Barakalla, \n iltimos, korxonangiz nomini kiriting")
+    await message.answer("Iltimos, korxonangiz nomini kiriting\n\n Anketa yuborishni to'xtatish uchun /cancel")
     await state.update_data(address=message.text)
     await state.set_state(FSMFillForm.fill_company)
 
 
 @router.message(StateFilter(FSMFillForm.fill_company))
 async def process_fill_text(message: Message, state: FSMContext):
-    await message.answer("Faoliyat turini kiriting: ")
+    await message.answer("Faoliyat turini kiriting\n\n Anketa yuborishni to'xtatish uchun /cancel")
     await state.update_data(company=message.text)
     await state.set_state(FSMFillForm.fill_career)
 
 
 @router.message(StateFilter(FSMFillForm.fill_career))
 async def process_fill_text(message: Message, state: FSMContext):
-    user_data = await state.get_data()
-    print(user_data)
-    await message.answer("STIR raqamini kiriting")
+    await message.answer("STIR raqamini kiriting\n\n Anketa yuborishni to'xtatish uchun /cancel")
     await state.update_data(career=message.text)
     await state.set_state(FSMFillForm.fill_STIR)
 
 
 @router.message(StateFilter(FSMFillForm.fill_STIR))
 async def process_fill_full_name(message: Message, state: FSMContext):
-    user_data = await state.get_data()
-    print(user_data)
-    await message.answer("Barakalla, \n iltimos, ism-sharifingizni kiriting")
+    await message.answer("Iltimos, ism-sharifingizni kiriting\n\n Anketa yuborishni to'xtatish uchun /cancel")
     await state.update_data(stir=message.text)
     await state.set_state(FSMFillForm.fill_full_name)
 
 
 @router.message(StateFilter(FSMFillForm.fill_full_name), check_name)
 async def process_fill_full_name(message: Message, state: FSMContext):
-    user_data = await state.get_data()
-    print(user_data)
-    await message.answer("iltimos, murojaat mazmunini kiriting kiriting")
+    await message.answer("iltimos, murojaat mazmunini kiriting kiriting\n\n Anketa yuborishni to'xtatish uchun /cancel")
     await state.update_data(full_name=message.text)
     await state.set_state(FSMFillForm.fill_text)
 
@@ -140,7 +133,7 @@ async def process_error_fill_full_name(message: Message):
 async def process_fill_text(message: Message, state: FSMContext):
     contact_button = KeyboardButton(text="Raqamni yuborish", request_contact=True)
     await message.answer(
-        "Barakalla, \niltimos, telefon raqamingizni yuboring",
+        "Iltimos, telefon raqamingizni yuboring",
         reply_markup=ReplyKeyboardMarkup(
             keyboard=[[contact_button]], resize_keyboard=True, one_time_keyboard=True
         ),
@@ -151,10 +144,8 @@ async def process_fill_text(message: Message, state: FSMContext):
 
 @router.message(StateFilter(FSMFillForm.fill_phone), F.contact)
 async def process_fill_phone(message: Message, state: FSMContext):
-    user_data = await state.get_data()
-    print(user_data)
     await message.answer(
-        "Barakalla, \niltimos, ijroga masul tashkilotni kiriting\n\nAnketa yuborishni to'xtatish uchun /cancel",
+        "Ijroga masul tashkilotni kiriting\n\nAnketa yuborishni to'xtatish uchun /cancel",
         reply_markup=ReplyKeyboardRemove(),
     )
     await state.update_data(phone=message.contact.phone_number)
@@ -164,7 +155,7 @@ async def process_fill_phone(message: Message, state: FSMContext):
 @router.message(StateFilter(FSMFillForm.fill_phone))
 async def process_error_fill_phone(message: Message):
     await message.answer(
-        "Telefon raqami noto'g'ri kiritildi, \n Iltimos telefon raqamingizni qaytadan kiriting. \n\nAnketa yuborishni to'xtatish uchun /cancel"
+        "Telefon raqami noto'g'ri kiritildi, \n Iltimos telefon raqamingizni qaytadan kiriting\n\nAnketa yuborishni to'xtatish uchun /cancel"
     )
 
 
@@ -173,7 +164,6 @@ async def process_fill_text(message: Message, state: FSMContext):
     await state.update_data(organization=message.text)
 
     user_data = await state.get_data()
-    print(user_data)
     user_data["user_id"] = message.from_user.id
 
     current_date = datetime.strftime(datetime.now(), "%Y-%m-%d")
@@ -189,7 +179,3 @@ async def process_fill_text(message: Message, state: FSMContext):
     except Exception as e:
         print(e)
     await state.clear()
-
-# @router.message()
-# async def ech0_message(message: Message):
-#     await message.answer("Echo message working....")
